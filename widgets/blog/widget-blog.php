@@ -1,5 +1,8 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly.
+}
 class HMD_Posts extends \Elementor\Widget_Base {
 
 	public function get_name() {
