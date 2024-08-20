@@ -6,6 +6,7 @@ function hmd_elementor_blog_template( $settings ) {
 
 		// Query.
 		'first_items_per_page' => 1,
+		'second_items_per_page' => 3,
 		'include'        => '',
 		'taxonomies'     => '',
 		'offset'         => '',
@@ -13,43 +14,6 @@ function hmd_elementor_blog_template( $settings ) {
 		'order'          => 'DESC',
 		'meta_key'       => '',
 		'exclude'        => '',
-
-//		// Visibility.
-//		'parts_media'             => true,
-//		'parts_title'             => true,
-//		'parts_meta'              => true,
-//		'parts_text'              => true,
-//		'parts_btn'               => true,
-//
-//		// Design.
-//		'img_size'                => 'medium',
-//		'blog_design'             => 'default',
-//		'blog_carousel_design'    => 'masonry',
-//		'blog_columns'            => [ 'size' => 3 ],
-//		'blog_columns_tablet'     => array( 'size' => '' ),
-//		'blog_columns_mobile'     => array( 'size' => '' ),
-//		'blog_spacing'            => woodmart_get_opt( 'blog_spacing' ),
-//		'blog_spacing_tablet'     => woodmart_get_opt( 'blog_spacing_tablet', '' ),
-//		'blog_spacing_mobile'     => woodmart_get_opt( 'blog_spacing_mobile', '' ),
-//		'pagination'              => '',
-//
-//		// Carousel.
-//		'speed'                   => '5000',
-//		'slides_per_view'         => array( 'size' => 4 ),
-//		'slides_per_view_tablet'  => array( 'size' => '' ),
-//		'slides_per_view_mobile'  => array( 'size' => '' ),
-//		'wrap'                    => '',
-//		'autoplay'                => 'no',
-//		'hide_pagination_control' => '',
-//		'hide_prev_next_buttons'  => '',
-//		'scroll_per_page'         => 'yes',
-//
-//		// Extra.
-//		'lazy_loading'            => 'no',
-//		'scroll_carousel_init'    => 'no',
-//		'ajax_page'               => '',
-//		'custom_sizes'            => apply_filters( 'woodmart_blog_shortcode_custom_sizes', false ),
-//		'elementor'               => true,
 	];
 
 	$settings = wp_parse_args( $settings, $default_settings );
@@ -75,30 +39,28 @@ function hmd_elementor_blog_template( $settings ) {
 	$second_query_args = [
 		'post_type'      => 'post',
 		'post_status'    => 'publish',
-		'posts_per_page' => '3',
+		'posts_per_page' => $settings['second_items_per_page'],
 		'offset'         => $settings['first_items_per_page']
 	];
+
+	if ( $settings['orderby'] ) {
+		$second_query_args['orderby'] = $settings['orderby'];
+	}
+
+	if ( $settings['order'] ) {
+		$second_query_args['order'] = $settings['order'];
+	}
+
 	$second_post       = new WP_Query( $second_query_args );
 
-	// Second Post
-	$query_args = [
-		'post_type'      => 'post',
-		'post_status'    => 'publish',
-		'posts_per_page' => '2',
-		'offset'         => '2'
-	];
-	$posts      = new WP_Query( $query_args );
-
 	?>
-    <div class="flex hmd-container-height hmd-gap">
+    <div class="flex max-sm:flex-col hmd-container-height max-sm:!h-auto hmd-gap">
 		<?php
 		// The Loop
 		if ( $first_post->have_posts() ) :
-			//$post_count = 0;
 			while ( $first_post->have_posts() ) : $first_post->the_post();
-				//$post_count ++;
+				$categories = get_the_category();
 				?>
-				<?php //if ( $post_count == 1 ): ?>
                 <article class="h-full bg-red-400 flex-1 overflow-hidden hmd-border-radius relative group">
                     <div class="absolute z-10 top-2.5 right-2.5 bg-white inline-block min-w-14 leading-none text-center">
                         <span class="block pb-0.5 pt-2"><?php echo get_the_date('d'); ?></span>
@@ -107,8 +69,18 @@ function hmd_elementor_blog_template( $settings ) {
                     <a class="block h-full w-full group-hover:scale-110 ease-in-out duration-700" href="<?php echo get_the_permalink(); ?>">
 		                <?php the_post_thumbnail( 'large', [ 'class' => '!h-full !w-full object-cover' ] ); ?>
                     </a>
-                    <div class="absolute bottom-0 p-3 inset-x-0 left-0 bg-gradient-to-b from-transparent via-[rgba(0,0,0,0.35)] to-[rgba(0,0,0,0.8)]">
-	                    <?php the_category(); ?>
+                    <div class="absolute bottom-0 p-3 pb-6 inset-x-0 left-0 bg-gradient-to-b from-transparent via-[rgba(0,0,0,0.35)] to-[rgba(0,0,0,0.8)]">
+	                    <?php
+	                    if ( ! empty( $categories ) ) {
+		                    echo '<ul class="flex gap-3">';
+		                    foreach ( $categories as $category ) {
+			                    echo '<li class="hmd-category m-0"><a href="' . esc_url( get_category_link( $category->term_id ) ) . '">';
+			                    echo esc_html( $category->name );
+			                    echo '</a></li>';
+		                    }
+		                    echo '</ul>';
+	                    }
+	                    ?>
                         <h2>
                             <a href="<?php echo get_the_permalink(); ?>">
 	                            <?php echo the_title(); ?>
@@ -116,7 +88,6 @@ function hmd_elementor_blog_template( $settings ) {
                         </h2>
                     </div>
                 </article>
-				<?php //endif; ?>
 			<?php endwhile;
 		endif;
 
@@ -131,10 +102,12 @@ function hmd_elementor_blog_template( $settings ) {
 				$post_count = 0;
 				while ( $second_post->have_posts() ) : $second_post->the_post();
 					$post_count ++;
+
+					$categories = get_the_category();
 					?>
 					<?php if ( $post_count == 1 ): ?>
 
-                        <article class="basis-full relative h-2/4 bg-red-200 relative overflow-hidden hmd-border-radius group">
+                        <article class="basis-full relative h-2/4 bg-red-200 relative overflow-hidden hmd-border-radius group max-sm:h-48">
                             <div class="absolute z-10 top-2.5 right-2.5 bg-white inline-block min-w-14 leading-none text-center">
                                 <span class="block pb-0.5 pt-2"><?php echo get_the_date('d'); ?></span>
                                 <span class="block pt-0.5 pb-2"><?php echo get_the_date('M'); ?></span>
@@ -142,8 +115,18 @@ function hmd_elementor_blog_template( $settings ) {
                             <a class="block h-full w-full group-hover:scale-110 ease-in-out duration-700" href="<?php echo get_the_permalink(); ?>">
 	                            <?php the_post_thumbnail( 'large', [ 'class' => '!h-full !w-full object-cover' ] ); ?>
                             </a>
-                            <div class="absolute bottom-0 p-3 inset-x-0 left-0 bg-gradient-to-b from-transparent via-[rgba(0,0,0,0.35)] to-[rgba(0,0,0,0.8)]">
-                                <?php the_category(); ?>
+                            <div class="absolute bottom-0 p-3 pb-6 inset-x-0 left-0 bg-gradient-to-b from-transparent via-[rgba(0,0,0,0.35)] to-[rgba(0,0,0,0.8)]">
+	                            <?php
+	                            if ( ! empty( $categories ) ) {
+		                            echo '<ul class="flex gap-3">';
+		                            foreach ( $categories as $category ) {
+			                            echo '<li class="hmd-category m-0"><a href="' . esc_url( get_category_link( $category->term_id ) ) . '">';
+			                            echo esc_html( $category->name );
+			                            echo '</a></li>';
+		                            }
+		                            echo '</ul>';
+	                            }
+	                            ?>
                                 <h3>
                                     <a href="<?php echo get_the_permalink(); ?>">
 		                                <?php echo the_title(); ?>
@@ -155,7 +138,7 @@ function hmd_elementor_blog_template( $settings ) {
 
                     <?php else: ?>
 
-                    <article class="flex-1 relative h-[48%] overflow-hidden bg-black hmd-border-radius group">
+                    <article class="flex-1 relative h-[48%] overflow-hidden bg-black hmd-border-radius group max-sm:h-48">
                         <div class="absolute z-10 top-2.5 right-2.5 bg-white inline-block min-w-14 leading-none text-center">
                             <span class="block pb-0.5 pt-2"><?php echo get_the_date('d'); ?></span>
                             <span class="block pt-0.5 pb-2"><?php echo get_the_date('M'); ?></span>
@@ -163,8 +146,18 @@ function hmd_elementor_blog_template( $settings ) {
                         <a class="block h-full w-full group-hover:scale-110 ease-in-out duration-700" href="<?php echo get_the_permalink(); ?>">
 		                    <?php the_post_thumbnail( 'large', [ 'class' => '!h-full !w-full object-cover' ] ); ?>
                         </a>
-                        <div class="absolute bottom-0 p-3 inset-x-0 left-0 bg-gradient-to-b from-transparent via-[rgba(0,0,0,0.35)] to-[rgba(0,0,0,0.8)]">
-	                        <?php the_category('' , '', ''); ?>
+                        <div class="absolute bottom-0 p-3 pb-6 inset-x-0 left-0 bg-gradient-to-b from-transparent via-[rgba(0,0,0,0.35)] to-[rgba(0,0,0,0.8)]">
+	                        <?php
+	                        if ( ! empty( $categories ) ) {
+                                echo '<ul class="flex gap-3">';
+		                        foreach ( $categories as $category ) {
+			                        echo '<li class="hmd-category m-0"><a href="' . esc_url( get_category_link( $category->term_id ) ) . '">';
+			                        echo esc_html( $category->name );
+			                        echo '</a></li>';
+		                        }
+		                        echo '</ul>';
+	                        }
+                            ?>
                             <h3>
                                 <a href="<?php echo get_the_permalink(); ?>">
 		                            <?php echo the_title(); ?>
