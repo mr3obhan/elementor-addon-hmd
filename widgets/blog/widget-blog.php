@@ -14,7 +14,7 @@ class HMD_Posts extends \Elementor\Widget_Base {
 	}
 
 	public function get_icon() {
-		return 'eicon-code';
+		return 'wd-icon-title';
 	}
 
 	public function get_categories() {

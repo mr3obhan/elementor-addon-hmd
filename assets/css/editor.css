@@ -1,0 +1,41 @@
+@keyframes xts-fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+.elementor-panel [class*=hmd-icon-]:before,
+.elementor-widget-empty-icon[class*=hmd-icon-]:before {
+    content: "";
+    line-height: 1;
+    display: block;
+    height: 32px;
+    width: 32px;
+    margin-top: -2px;
+    margin-bottom: -2px;
+    margin-left: auto;
+    margin-right: auto;
+    background-position: 0;
+    background-size: cover;
+}
+
+.elementor-element.elementor-widget-empty .elementor-widget-empty-icon {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.elementor-widget-empty-icon[class*=hmd-icon-]:before {
+    height: 24px;
+    width: 24px;
+    opacity: 0.5;
+}
+
+.wd-icon-title:before {
+    background-image: url(../../assets/images/el-icons/section-title.svg);
+}
+
+.hmd-icon-services:before {
+    background-image: url(../../assets/images/el-icons/hmd-icon-services.png);
+}
